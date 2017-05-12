@@ -63,11 +63,12 @@ namespace Microsoft.Templates.UI
             return null;
         }
 
-        public static async Task GenerateAsync(UserSelection userSelection)
+        //TODO: Review this!!
+        public static async Task GenerateAsync(UserSelection userSelection, bool partialGeneration = false)
         {
             try
             {
-                await UnsafeGenerateAsync(userSelection);
+                await UnsafeGenerateAsync(userSelection, partialGeneration);
             }
             catch (Exception ex)
             {
@@ -79,9 +80,9 @@ namespace Microsoft.Templates.UI
             }
         }
 
-        public static async Task UnsafeGenerateAsync(UserSelection userSelection)
+        public static async Task UnsafeGenerateAsync(UserSelection userSelection, bool partialGeneration = false)
         {
-            var genItems = GenComposer.Compose(userSelection).ToList();
+            var genItems = GenComposer.Compose(userSelection, partialGeneration).ToList();
             var chrono = Stopwatch.StartNew();
             var genResults = new Dictionary<string, TemplateCreationResult>();
 

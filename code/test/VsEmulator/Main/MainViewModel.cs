@@ -11,6 +11,7 @@
 // ******************************************************************
 
 using System;
+using System.Linq;
 using System.IO;
 using System.Threading;
 using System.Windows;
@@ -24,6 +25,7 @@ using Microsoft.Templates.VsEmulator.NewProject;
 using Microsoft.Templates.VsEmulator.TemplatesContent;
 using Microsoft.VisualStudio.TemplateWizard;
 using Microsoft.Templates.UI;
+using Microsoft.Templates.VsEmulator.NewItem;
 
 namespace Microsoft.Templates.VsEmulator.Main
 {
@@ -42,6 +44,8 @@ namespace Microsoft.Templates.VsEmulator.Main
         public string OutputPath { get; private set; }
 
         public RelayCommand NewProjectCommand => new RelayCommand(NewProject);
+        public RelayCommand NewItemCommand => new RelayCommand(NewItem);
+
         public RelayCommand OpenInVsCommand => new RelayCommand(OpenInVs);
         public RelayCommand OpenInVsCodeCommand => new RelayCommand(OpenInVsCode);
         public RelayCommand OpenInExplorerCommand => new RelayCommand(OpenInExplorer);
@@ -150,6 +154,57 @@ namespace Microsoft.Templates.VsEmulator.Main
             }
         }
 
+        private async void NewItem()
+        {
+            ConfigureGenContext();
+
+            try
+            {
+                var newItemInfo = ShowNewItemDialog();
+                if (!string.IsNullOrEmpty(newItemInfo))
+                {
+                    SolutionPath = newItemInfo;
+                    SolutionName = Path.GetFileNameWithoutExtension(SolutionPath);
+
+                    var projFile = Directory.EnumerateFiles(Path.GetDirectoryName(SolutionPath), "*.csproj", SearchOption.AllDirectories).FirstOrDefault();
+                    ProjectName = Path.GetFileNameWithoutExtension(projFile);
+                    OutputPath = Path.GetDirectoryName(projFile);
+
+                    GenContext.Current = this;
+
+                    TODO: Change this to be selectable
+                    await GenContext.ToolBox.Repo.SynchronizeAsync();
+
+                    var mapTemplate = GenContext.ToolBox.Repo.Find(t => t.Identity == "wts.Page.Map");
+                    var userSelection = new UserSelection
+                    {
+                        Framework = "MVVMBasic",
+                        ProjectType = "SplitView",
+                    };
+
+                    userSelection.Pages.Add(("Map", mapTemplate));
+
+                    //var userSelection = GenController.GetUserSelection();
+
+                    if (userSelection != null)
+                    {
+                        await GenController.GenerateAsync(userSelection, true);
+
+                        GenContext.ToolBox.Shell.ShowStatusBarMessage("Project created!!!");
+                    }
+                }
+
+            }
+            catch (WizardBackoutException)
+            {
+                GenContext.ToolBox.Shell.ShowStatusBarMessage("Wizard back out");
+            }
+            catch (WizardCancelledException)
+            {
+                GenContext.ToolBox.Shell.ShowStatusBarMessage("Wizard cancelled");
+            }
+
+        }
         private void ConfigureVersions()
         {
             var dialog = new TemplatesContentView(WizardVersion, TemplatesVersion)
@@ -271,6 +326,24 @@ namespace Microsoft.Templates.VsEmulator.Main
 
             Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, method, frame);
             Dispatcher.PushFrame(frame);
+        }
+
+
+        private string ShowNewItemDialog()
+        {
+            var dialog = new NewItemView(SolutionPath)
+            {
+                Owner = _host
+            };
+
+            var result = dialog.ShowDialog();
+
+            if (result.HasValue && result.Value)
+            {
+                return dialog.ViewModel.SolutionPath;
+            }
+
+            return string.Empty;
         }
     }
 }

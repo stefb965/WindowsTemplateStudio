@@ -38,11 +38,15 @@
                         </Hyperlink>
                     </TextBlock>
                     <TextBlock>
+                        <Hyperlink Command="{Binding NewItemCommand}">
+                            <TextBlock Text="Add new item..."/>
+                        </Hyperlink>
+                    </TextBlock>
+                    <TextBlock>
                         <Hyperlink Command="{Binding ConfigureVersionsCommand}">
                             <TextBlock Text="Configure versions..."/>
                         </Hyperlink>
                     </TextBlock>
-                    
                 </StackPanel>
                 
                 <ScrollViewer x:Name="logScroll" Grid.Row="1" VerticalAlignment="Bottom" VerticalScrollBarVisibility="Auto" Height="200">

@@ -108,7 +108,7 @@ namespace Microsoft.Templates.UI
 
         
 
-        public static IEnumerable<GenInfo> Compose(UserSelection userSelection)
+        public static IEnumerable<GenInfo> Compose(UserSelection userSelection, bool partialGeneration = false)
         {
             var genQueue = new List<GenInfo>();
 
@@ -117,7 +117,11 @@ namespace Microsoft.Templates.UI
                 return genQueue;
             }
 
-            AddProject(userSelection, genQueue);
+            //TODO: Review this!!
+            if (!partialGeneration)
+            {
+                AddProject(userSelection, genQueue);
+            }
             AddTemplates(userSelection.Pages, genQueue);
             AddTemplates(userSelection.Features, genQueue);
 
