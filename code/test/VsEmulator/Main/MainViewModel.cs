@@ -172,19 +172,19 @@ namespace Microsoft.Templates.VsEmulator.Main
 
                     GenContext.Current = this;
 
-                    TODO: Change this to be selectable
-                    await GenContext.ToolBox.Repo.SynchronizeAsync();
+                    //TODO: Change this to be selectable
+                    //await GenContext.ToolBox.Repo.SynchronizeAsync();
 
-                    var mapTemplate = GenContext.ToolBox.Repo.Find(t => t.Identity == "wts.Page.Map");
-                    var userSelection = new UserSelection
-                    {
-                        Framework = "MVVMBasic",
-                        ProjectType = "SplitView",
-                    };
+                    //var mapTemplate = GenContext.ToolBox.Repo.Find(t => t.Identity == "wts.Page.Map");
+                    //var userSelection = new UserSelection
+                    //{
+                    //    Framework = "MVVMBasic",
+                    //    ProjectType = "SplitView",
+                    //};
 
-                    userSelection.Pages.Add(("Map", mapTemplate));
+                    //userSelection.Pages.Add(("Map", mapTemplate));
 
-                    //var userSelection = GenController.GetUserSelection();
+                    var userSelection = GenController.GetUserSelection();
 
                     if (userSelection != null)
                     {
