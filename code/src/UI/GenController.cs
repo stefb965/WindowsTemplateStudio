@@ -63,6 +63,40 @@ namespace Microsoft.Templates.UI
             return null;
         }
 
+        public static UserSelection GetUserSelectionNewItem()
+        {
+            var newItem = new NewItemView("SplitView", "MVVMBasic");
+
+            try
+            {
+                CleanStatusBar();
+
+                GenContext.ToolBox.Shell.ShowModal(newItem);
+                if (newItem.Result != null)
+                {
+                    //TODO: Review when right-click-actions available to track Project or Page completed.
+                    //AppHealth.Current.Telemetry.TrackWizardCompletedAsync(WizardTypeEnum.NewItem).FireAndForget();
+
+                    return newItem.Result;
+                }
+                else
+                {
+                    //TODO: Review when right-click-actions available to track Project or Page cancelled.
+                    //AppHealth.Current.Telemetry.TrackWizardCancelledAsync(WizardTypeEnum.NewProject).FireAndForget();
+                }
+
+            }
+            catch (Exception ex) when (!(ex is WizardBackoutException))
+            {
+                newItem.SafeClose();
+                ShowError(ex);
+            }
+
+            GenContext.ToolBox.Shell.CancelWizard();
+
+            return null;
+        }
+
         //TODO: Review this!!
         public static async Task GenerateAsync(UserSelection userSelection, bool partialGeneration = false)
         {

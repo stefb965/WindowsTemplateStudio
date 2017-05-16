@@ -132,7 +132,7 @@ namespace Microsoft.Templates.UI.ViewModels
             set => SetProperty(ref _canChooseItemName, value);
         }
 
-        public TemplateInfoViewModel(ITemplateInfo template, IEnumerable<ITemplateInfo> dependencies)
+        public TemplateInfoViewModel(ITemplateInfo template, IEnumerable<ITemplateInfo> dependencies, string contextFramework)
         {
             Author = template.Author;
             CanChooseItemName = template.GetItemNameEditable();
@@ -150,7 +150,8 @@ namespace Microsoft.Templates.UI.ViewModels
             
             if (dependencies != null && dependencies.Any())
             {
-                DependencyItems.AddRange(dependencies.Select(d => new DependencyInfoViewModel(new TemplateInfoViewModel(d, GenComposer.GetAllDependencies(d, MainViewModel.Current.ProjectSetup.SelectedFramework.Name)))));
+                //TODO: Review this, GetAllDependencies is recursive
+                DependencyItems.AddRange(dependencies.Select(d => new DependencyInfoViewModel(new TemplateInfoViewModel(d, GenComposer.GetAllDependencies(d, contextFramework), contextFramework))));
 
                 Dependencies = string.Join(",", dependencies.Select(d => d.Name));
             }
