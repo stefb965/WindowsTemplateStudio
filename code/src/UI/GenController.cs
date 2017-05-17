@@ -65,7 +65,7 @@ namespace Microsoft.Templates.UI
 
         public static UserSelection GetUserSelectionNewItem()
         {
-            var newItem = new NewItemView("SplitView", "MVVMBasic");
+            var newItem = new NewItemView();
 
             try
             {

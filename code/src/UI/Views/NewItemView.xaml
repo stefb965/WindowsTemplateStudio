@@ -34,6 +34,7 @@
             <ComboBox 
                 ItemsSource="{Binding ProjectTypes}"
                 SelectedItem="{Binding ContextProjectType, Mode=TwoWay}"
+                IsEnabled="{Binding EnableContextSelection}"
                 >
             </ComboBox>
         </StackPanel>
@@ -41,7 +42,8 @@
             <TextBlock Text="Framework: "></TextBlock>
             <ComboBox 
                 ItemsSource="{Binding Frameworks}"
-                SelectedItem="{Binding ContextFramework, Mode=TwoWay}">
+                SelectedItem="{Binding ContextFramework, Mode=TwoWay}"
+                IsEnabled="{Binding EnableContextSelection}">
             </ComboBox>
         </StackPanel>
         <StackPanel Orientation="Vertical" Grid.Row="2" Margin="{StaticResource MediumTopMargin}">

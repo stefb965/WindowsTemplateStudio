@@ -7,10 +7,12 @@ using Microsoft.Templates.UI.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Xml.Linq;
 
 namespace Microsoft.Templates.UI.ViewModels
 {
@@ -59,7 +61,15 @@ namespace Microsoft.Templates.UI.ViewModels
 
         public ObservableCollection<ITemplateInfo> Templates { get; } = new ObservableCollection<ITemplateInfo>();
 
-        
+        private bool _enableContextSelection;
+        public bool EnableContextSelection
+        {
+            get { return _enableContextSelection; }
+            set
+            {
+                SetProperty(ref _enableContextSelection, value);
+            }
+        }
 
         private ITemplateInfo _templateSelected;
         public ITemplateInfo TemplateSelected
@@ -87,14 +97,32 @@ namespace Microsoft.Templates.UI.ViewModels
         }
 
   
-        public async Task InitializeAsync(string contextProjectType, string contextFramework)
+        public async Task InitializeAsync()
         {
             await GenContext.ToolBox.Repo.SynchronizeAsync();
-            
+            var path =  Path.Combine(GenContext.Current.OutputPath, "Package.appxmanifest");
+            var manifest = XElement.Load(path);
+
+            var metadata = manifest.Descendants().FirstOrDefault(e => e.Name.LocalName == "Metadata");
+            var projectType = metadata?.Descendants().FirstOrDefault(m=> m.Attribute("Name").Value == "projectType")?.Attribute("Value")?.Value;
+            var framework = metadata?.Descendants().FirstOrDefault(m => m.Attribute("Name").Value == "framework")?.Attribute("Value")?.Value;
+
             ProjectTypes.AddRange(GenContext.ToolBox.Repo.GetProjectTypes().Select(f => f.Name));
-            ContextProjectType = contextProjectType;
-            ContextFramework = contextFramework;
-            
+            if (projectType != null)
+            {
+                ContextProjectType = projectType;
+                EnableContextSelection = false;
+            }
+            else
+            {
+                ContextProjectType = ProjectTypes.FirstOrDefault();
+                EnableContextSelection = true;
+            }
+            if (framework != null)
+            {
+                ContextFramework = framework;
+            }
+
 
             await Task.CompletedTask;
         }
@@ -122,7 +150,7 @@ namespace Microsoft.Templates.UI.ViewModels
 
             Frameworks.Clear();
             Frameworks.AddRange(targetFrameworks);
-            if (Frameworks.Any())
+            if (ContextFramework == null)
             {
                 ContextFramework = Frameworks.FirstOrDefault();
             }

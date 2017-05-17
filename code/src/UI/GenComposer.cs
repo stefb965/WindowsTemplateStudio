@@ -138,6 +138,8 @@ namespace Microsoft.Templates.UI
             genProject.Parameters.Add(GenParams.Username, Environment.UserName);
             genProject.Parameters.Add(GenParams.WizardVersion, GenContext.ToolBox.WizardVersion);
             genProject.Parameters.Add(GenParams.TemplatesVersion, GenContext.ToolBox.TemplatesVersion);
+            genProject.Parameters.Add(GenParams.ProjectType, userSelection.ProjectType);
+            genProject.Parameters.Add(GenParams.Framework, userSelection.Framework);
         }
 
         private static ITemplateInfo GetProjectTemplate(string projectType, string framework)

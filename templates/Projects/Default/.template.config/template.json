@@ -38,6 +38,16 @@
     {
       "type": "parameter",
       "replaces": "Param_Templates.Version"
+    },
+    "wts.generationProjectType":
+    {
+      "type": "parameter",
+      "replaces": "Param_ProjectType"
+    },
+    "wts.generationFramework":
+    {
+      "type": "parameter",
+      "replaces": "Param_Framework"
     }
   },
   "copyrightYear": {
