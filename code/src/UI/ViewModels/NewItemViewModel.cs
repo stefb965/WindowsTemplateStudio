@@ -2,6 +2,7 @@
 using Microsoft.Templates.Core;
 using Microsoft.Templates.Core.Gen;
 using Microsoft.Templates.Core.Mvvm;
+using Microsoft.Templates.UI.Resources;
 using Microsoft.Templates.UI.Views;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace Microsoft.Templates.UI.ViewModels
 {
     public class NewItemViewModel : Observable
     {
-        private bool _isValid = true;
+       
 
         private readonly NewItemView _newItemView;
 
@@ -25,7 +26,10 @@ namespace Microsoft.Templates.UI.ViewModels
         public string ContextFramework
         {
             get { return _contextFramework; }
-            set { SetProperty(ref _contextFramework, value); }
+            set {
+                SetProperty(ref _contextFramework, value);
+                LoadTemplates();
+            }
         }
 
         private string _contextProjectType;
@@ -33,26 +37,32 @@ namespace Microsoft.Templates.UI.ViewModels
         public string ContextProjectType
         {
             get { return _contextProjectType; }
-            set { SetProperty(ref _contextProjectType, value); }
+            set {
+                SetProperty(ref _contextProjectType, value);
+                LoadFrameworks();
+            }
         }
 
+        public List<(string Name, ITemplateInfo Template)> SavedTemplates { get; } = new List<(string Name, ITemplateInfo Template)>();
 
-
-        public NewItemViewModel(NewItemView newItemView, string contextProjectType, string contextFramework)
+        public NewItemViewModel(NewItemView newItemView)
         {
             _newItemView = newItemView;
-            _contextProjectType = contextProjectType;
-            _contextFramework = contextFramework;
+            
         }
 
-        public ICommand OkCommand => new RelayCommand(SaveAndClose, IsValid);
+        public ICommand OkCommand => new RelayCommand(SaveAndClose);
         public ICommand CancelCommand => new RelayCommand(_newItemView.Close);
 
-   
-        public ObservableCollection<TemplateInfoViewModel> Templates { get; } = new ObservableCollection<TemplateInfoViewModel>();
+        public ObservableCollection<string> ProjectTypes { get; } = new ObservableCollection<string>();
+        public ObservableCollection<string> Frameworks { get; } = new ObservableCollection<string>();
 
-        private TemplateInfoViewModel _templateSelected;
-        public TemplateInfoViewModel TemplateSelected
+        public ObservableCollection<ITemplateInfo> Templates { get; } = new ObservableCollection<ITemplateInfo>();
+
+        
+
+        private ITemplateInfo _templateSelected;
+        public ITemplateInfo TemplateSelected
         {
             get { return _templateSelected; }
             set
@@ -65,6 +75,7 @@ namespace Microsoft.Templates.UI.ViewModels
             }
         }
 
+
         private string _itemName;
         public string ItemName
         {
@@ -72,37 +83,51 @@ namespace Microsoft.Templates.UI.ViewModels
             set
             {
                 SetProperty(ref _itemName, value);
-
-                Validate(value);
-
-                OnPropertyChanged(nameof(OkCommand));
             }
         }
 
-        public async Task InitializeAsync()
+  
+        public async Task InitializeAsync(string contextProjectType, string contextFramework)
         {
             await GenContext.ToolBox.Repo.SynchronizeAsync();
-            Templates.Clear();
+            
+            ProjectTypes.AddRange(GenContext.ToolBox.Repo.GetProjectTypes().Select(f => f.Name));
+            ContextProjectType = contextProjectType;
+            ContextFramework = contextFramework;
+            
 
+            await Task.CompletedTask;
+        }
+
+        private void LoadTemplates()
+        {
             var pageTemplates = GenContext.ToolBox.Repo.Get(t => (t.GetTemplateType() == TemplateType.Page || t.GetTemplateType() == TemplateType.Feature)
-                                                                && t.GetFrameworkList().Contains(_contextFramework)                                                               )
-                                                            .Select(t => new TemplateInfoViewModel(t, GenComposer.GetAllDependencies(t, _contextFramework), _contextFramework));
-
+                                                                            && t.GetFrameworkList().Contains(_contextFramework));
+            Templates.Clear();
             Templates.AddRange(pageTemplates);
 
             if (Templates.Any())
             {
                 TemplateSelected = Templates.FirstOrDefault();
             }
-            else
-            {
-                _isValid = false;
-                OnPropertyChanged(nameof(OkCommand));
-            }
-
-            await Task.CompletedTask;
         }
-        
+
+        private void LoadFrameworks()
+        {
+            var projectFrameworks = GenComposer.GetSupportedFx(_contextProjectType);
+            var targetFrameworks = GenContext.ToolBox.Repo.GetFrameworks()
+                                                                .Where(m => projectFrameworks.Contains(m.Name))
+                                                                .Select(f => f.Name)
+                                                                .ToList();
+
+            Frameworks.Clear();
+            Frameworks.AddRange(targetFrameworks);
+            if (Frameworks.Any())
+            {
+                ContextFramework = Frameworks.FirstOrDefault();
+            }
+        }
+
         private void SaveAndClose()
         {
             _newItemView.DialogResult = true;
@@ -118,8 +143,8 @@ namespace Microsoft.Templates.UI.ViewModels
                 ProjectType = _contextProjectType,
                 Framework = _contextFramework
             };
-            AddTemplate(userSelection, TemplateSelected.Template);
-            var dependencies = GenComposer.GetAllDependencies(TemplateSelected.Template, _contextFramework);
+            AddTemplate(userSelection, TemplateSelected);
+            var dependencies = GenComposer.GetAllDependencies(TemplateSelected, _contextFramework);
             foreach (var dependency in dependencies)
             {
                 AddTemplate(userSelection, dependency);
@@ -139,29 +164,5 @@ namespace Microsoft.Templates.UI.ViewModels
                 userSelection.Features.Add((ItemName, template));
             }
         }
-
-        private void HandleValidation(ValidationResult validationResult)
-        {
-            _isValid = validationResult.IsValid;
-
-            if (!validationResult.IsValid)
-            {
-                var message = "ValidationError";
-                if (string.IsNullOrWhiteSpace(message))
-                {
-                    message = "UndefinedError";
-                }
-                throw new Exception(message);
-            }
-        }
-
-        private void Validate(string value)
-        {
-            var validationResult = Naming.Validate(new List<string>(), value);
-
-            HandleValidation(validationResult);
-        }
-
-        private bool IsValid() => _isValid;
     }
 }

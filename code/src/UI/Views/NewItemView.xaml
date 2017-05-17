@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Microsoft.Templates.UI.Controls"
         Width="600" 
-        Height="420"
+        Height="450"
         mc:Ignorable="d"
         Title="Add new item"
         WindowStartupLocation="CenterScreen" 
@@ -18,7 +18,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid Margin="12,12,12,12" >
+    <Grid Margin="{StaticResource MediumLeftTopRightMargin}" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
@@ -31,16 +31,24 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="{StaticResource MediumTopMargin}">
             <TextBlock Text="Project Type: "></TextBlock>
-            <TextBox Text="{Binding ContextProjectType, Mode=TwoWay}" />
+            <ComboBox 
+                ItemsSource="{Binding ProjectTypes}"
+                SelectedItem="{Binding ContextProjectType, Mode=TwoWay}"
+                >
+            </ComboBox>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="{StaticResource MediumTopMargin}">
             <TextBlock Text="Framework: "></TextBlock>
-            <TextBox  Text="{Binding ContextFramework, Mode=TwoWay}"  />
+            <ComboBox 
+                ItemsSource="{Binding Frameworks}"
+                SelectedItem="{Binding ContextFramework, Mode=TwoWay}">
+            </ComboBox>
         </StackPanel>
         <StackPanel Orientation="Vertical" Grid.Row="2" Margin="{StaticResource MediumTopMargin}">
             <TextBlock Text="Select page or framework: "></TextBlock>
-            <ListView             
-                Width="500"
+            <ListView    
+                SelectionMode="Single"
+                Width="420"
                 ItemsSource="{Binding Templates}"
                 SelectedItem="{Binding TemplateSelected, Mode=TwoWay}">
                 <ListView.ItemTemplate>
@@ -55,7 +63,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallMargin}">
                 <StackPanel.Style>
                     <Style TargetType="StackPanel">
                         <Setter Property="Visibility" Value="Visible" />
@@ -72,9 +80,9 @@
                 <TextBlock Text="Page name:" />
                 <TextBox Text="{Binding ItemName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" MaxLength="30"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Column="1">
-                <Button Content="Ok" Command="{Binding OkCommand}"  />
-                <Button Content="Cancel" Command="{Binding CancelCommand}"  />
+            <StackPanel Orientation="Horizontal" Grid.Column="1" >
+                <Button Content="Ok" Command="{Binding OkCommand}"  Margin="{StaticResource SmallMargin}"/>
+                <Button Content="Cancel" Command="{Binding CancelCommand}" Margin="{StaticResource SmallMargin}" />
             </StackPanel>
         </Grid>
     </Grid>
