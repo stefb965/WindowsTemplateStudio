@@ -129,8 +129,10 @@ namespace Microsoft.Templates.UI.ViewModels
 
         private void LoadTemplates()
         {
-            var pageTemplates = GenContext.ToolBox.Repo.Get(t => (t.GetTemplateType() == TemplateType.Page || t.GetTemplateType() == TemplateType.Feature)
-                                                                            && t.GetFrameworkList().Contains(_contextFramework));
+            var pageTemplates = GenContext.ToolBox.Repo.Get(t => 
+                                                    (t.GetTemplateType() == TemplateType.Page || t.GetTemplateType() == TemplateType.Feature)
+                                                  && t.GetFrameworkList().Contains(_contextFramework)
+                                                  && t.GetRightClickEnabled());
             Templates.Clear();
             Templates.AddRange(pageTemplates);
 
